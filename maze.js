@@ -7,7 +7,7 @@ const youWonDiv = document.getElementById("youWonDiv")
 const delta = 33;
 
 // Coordinates of the player's avatar.
-let avatarRow; 
+let avatarRow;
 let avatarCol;
 
 // Separate array for keeping track of the moving crates.
@@ -26,11 +26,43 @@ const crates = [];
 // types into consideration. Keep in mind that the player and boxes will be
 // absolutely positioned (so that they can be moved) and that you'll need to
 // draw a box for both B's _and_ X's. 
-//
+
 // Similarly, you'll want to draw a a storage location for both O's and X's. In
 // other words, X is a tile that has both a box and something indicating it as
 // storage at the same time.
-//
+let storage = [];
+for (let row = 0; row < map.length; row++) {
+    const rowStr = map[row];
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "row";
+
+    let x = [];
+    crates.push(x);
+    storage.push([]);
+    for (let i = 0; i < rowStr.length; i++) {
+        let cellClass = rowStr[i];
+        const cellDiv = document.createElement("div");
+
+        cellDiv.className = "cell " + cellClass;
+
+
+        if (cellClass === "S") {
+            avatarCol = i;
+            avatarRow = row;
+        }
+
+        if (cellClass === "B") {
+            let box = crate(row, i);
+            crates[row][i] = box;
+        } else {
+            crates[row][i] = "";
+        }
+        storage[row].push(cellDiv);
+        rowDiv.appendChild(cellDiv);
+    }
+    mazeDiv.appendChild(rowDiv);
+    console.log(crates);
+}
 // Continue to STEP 2
 
 
@@ -65,7 +97,8 @@ function move(dRow, dCol) {
     const destCell = map[destRow][destCol];
 
     // Check if there is a crate there.
-    const crate = crates[destRow][destCol];
+    const crateCheck = crates[destRow][destCol];
+
 
     // STEP 2 -----------------------------------------------------------------/
     // For the maze, it was enough to check that the place the player wanted to
@@ -80,30 +113,64 @@ function move(dRow, dCol) {
     //
     // You will then need to move the player if the destination cell is empty.
     // Continue to STEP 3
+    
+    if (crateCheck) {
+        // Calculate the coordinates we would need to push the crate.
+        const crateDestRow = destRow + dRow;
+        const crateDestCol = destCol + dCol;
+        
+        // If there's no walls or in the way, Push the crate.
+        if ( map[crateDestRow][crateDestCol] !== "W" && map[crateDestRow][crateDestCol].className !== "crate" && crates[crateDestRow][crateDestCol] == "") {
+        crates[crateDestRow][crateDestCol] = crateCheck;
+        crates[destRow][destCol] = "";
+        crateCheck.style.top = crateDestRow * delta + "px";
+        crateCheck.style.left = crateDestCol * delta + "px";
+        }
+
+    }
+
+    // If there's no wall in the way, move the player's avatar.
+    if (destCell !== "W" && crates[destRow][destCol] === "") {
+        avatarRow += dRow;
+        avatarCol += dCol;
+        redrawAvatar();
+    }
+
+    // You will then need to move the player if the destination cell is empty.
+    // Continue to STEP 3
 
     checkForWin();
 }
+
 
 function checkForWin() {
     // STEP 3 -----------------------------------------------------------------/
     // Write a function that checks if the player won. A player wins when all
     // boxes are moved over all storage spaces.
+    for (let row = 0; row <map.length; row++) {
+        for (let col = 0; col < map[row].length; col++) {
+            if (map[row][col] !== "O" && map[row][col] !== "X") {
+                return;
+            }
+        }
+    }
+    
     youWonDiv.classList.remove("hidden");
 }
 
 document.addEventListener('keydown', (event) => {
-    switch(event.key) {
+    switch (event.key) {
         case "ArrowDown":
-            move(1,0);
+            move(1, 0);
             break;
         case "ArrowUp":
-            move(-1,0);
+            move(-1, 0);
             break;
         case "ArrowLeft":
-            move(0,-1);
+            move(0, -1);
             break;
         case "ArrowRight":
-            move(0,1);
+            move(0, 1);
             break;
         default:
             console.log('keydown event\n\nkey: ' + event.key);
