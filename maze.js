@@ -149,8 +149,10 @@ function checkForWin() {
     // boxes are moved over all storage spaces.
     for (let row = 0; row <map.length; row++) {
         for (let col = 0; col < map[row].length; col++) {
-            if (map[row][col] !== "O" && map[row][col] !== "X") {
-                return;
+            if (crates[row][col] !== "") {
+                if(map[row][col] !== "O") {
+                    return;
+                }
             }
         }
     }
